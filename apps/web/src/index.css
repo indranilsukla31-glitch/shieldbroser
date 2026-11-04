@@ -1,0 +1,111 @@
+@import "tailwindcss";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource-variable/inter";
+
+@theme {
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #07060b;
+  --color-ink-2: #0f0d16;
+  --color-ink-3: #181522;
+  --color-fog: #f4f1fb;
+  --color-mist: #b9b3c9;
+  --color-dim: #7d7690;
+  --color-glow: #ff4f9a;
+  --color-glow-2: #7a5cff;
+  --color-glow-3: #ffb36b;
+}
+
+:root {
+  color-scheme: dark;
+  background: var(--color-ink);
+  color: var(--color-fog);
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-ink);
+  overscroll-behavior-y: none;
+}
+
+/* Frosted glass panel used over artwork and (later) live visuals. */
+.glass {
+  background: color-mix(in oklab, var(--color-ink-2) 55%, transparent);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / 0.08);
+  box-shadow: 0 10px 40px -12px rgb(0 0 0 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+
+input[type="range"].seek {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  width: 100%;
+  height: 28px;
+  cursor: pointer;
+}
+input[type="range"].seek::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--color-fog) var(--p, 0%), rgb(255 255 255 / 0.18) var(--p, 0%));
+}
+input[type="range"].seek::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.18);
+}
+input[type="range"].seek::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-fog);
+}
+input[type="range"].seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 999px;
+  background: var(--color-fog);
+  box-shadow: 0 0 0 4px rgb(255 255 255 / 0.12);
+}
+input[type="range"].seek::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-fog);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

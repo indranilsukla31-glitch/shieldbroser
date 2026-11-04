@@ -1,0 +1,16 @@
+{
+  "name": "artei",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "dev": "npm run dev --workspace @artei/server & npm run dev --workspace @artei/web; wait",
+    "dev:server": "npm run dev --workspace @artei/server",
+    "dev:web": "npm run dev --workspace @artei/web",
+    "build": "npm run build --workspace @artei/web",
+    "start": "npm run start --workspace @artei/server",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": { "node": ">=20" }
+}

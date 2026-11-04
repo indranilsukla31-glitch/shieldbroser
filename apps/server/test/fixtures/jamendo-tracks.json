@@ -1,0 +1,36 @@
+{
+  "headers": { "status": "success", "code": 0, "error_message": "", "warnings": "", "results_count": 2 },
+  "results": [
+    {
+      "id": "1886257",
+      "name": "Fixture Song",
+      "duration": 201,
+      "artist_id": "7901",
+      "artist_name": "Fixture Artist",
+      "album_name": "Fixture Album",
+      "image": "https://usercontent.jamendo.com?type=album&id=1&width=600",
+      "shareurl": "https://www.jamendo.com/track/1886257",
+      "audio": "https://prod-1.storage.jamendo.com/?trackid=1886257&format=mp32",
+      "license_ccurl": "http://creativecommons.org/licenses/by-nc-sa/3.0/",
+      "lyrics": "First line here<br />Second line here\n\nThird line",
+      "musicinfo": {
+        "vocalinstrumental": "vocal",
+        "speed": "high",
+        "tags": { "genres": ["pop", "electronic"], "instruments": ["synthesizer"], "vartags": ["happy"] }
+      }
+    },
+    {
+      "id": "1886258",
+      "name": "Fixture Instrumental",
+      "duration": "150",
+      "artist_id": "7902",
+      "artist_name": "Another Artist",
+      "album_name": "",
+      "album_image": "https://usercontent.jamendo.com?type=album&id=2&width=600",
+      "audio": "https://prod-1.storage.jamendo.com/?trackid=1886258&format=mp32",
+      "license_ccurl": "http://creativecommons.org/licenses/by-nd/3.0/",
+      "lyrics": "",
+      "musicinfo": { "vocalinstrumental": "instrumental", "speed": "low", "tags": { "genres": ["ambient"] } }
+    }
+  ]
+}
