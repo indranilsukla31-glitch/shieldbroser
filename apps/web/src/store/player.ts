@@ -33,6 +33,7 @@ export const usePlayer = create<PlayerState>((set, get) => {
     set({ index: i, status: "loading", error: undefined, position: 0, duration: t.duration, buffered: 0 });
     audio.src = api.streamUrl(t.ref);
     if (autoplay) {
+      analyser.ensure();
       audio.play().catch((e: Error) => {
         // Autoplay can be blocked until the user interacts; that's a pause, not an error.
         if (e.name === "NotAllowedError") set({ status: "paused" });
@@ -76,6 +77,7 @@ export const usePlayer = create<PlayerState>((set, get) => {
       const cur = get().current();
       if (cur && cur.ref === tracks[startIndex]?.ref) {
         set({ queue: tracks, index: startIndex });
+        analyser.ensure();
         if (audio.paused) void audio.play();
         return;
       }
@@ -86,6 +88,7 @@ export const usePlayer = create<PlayerState>((set, get) => {
       const { status, index } = get();
       if (index < 0) return;
       if (status === "error") return load(index);
+      analyser.ensure();
       if (audio.paused) void audio.play().catch(() => set({ status: "paused" }));
       else audio.pause();
     },
@@ -107,3 +110,7 @@ export const usePlayer = create<PlayerState>((set, get) => {
     },
   };
 });
+
+import { AudioAnalyser } from "../audio/analyser";
+/** Shared analyser bound to the app's audio element (created lazily on first play). */
+export const analyser = new AudioAnalyser(audio);

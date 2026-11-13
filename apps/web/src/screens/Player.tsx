@@ -1,13 +1,17 @@
 import { motion } from "framer-motion";
 import { AlertCircle, ChevronDown } from "lucide-react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { usePlayer } from "../store/player";
 import { Artwork } from "../components/Artwork";
 import { Controls } from "../components/Controls";
 import { SeekBar } from "../components/SeekBar";
 import { Credit } from "../components/Credit";
 import { LikeButton } from "../components/LikeButton";
-import { trackHues } from "../lib/format";
+import { hash, trackHues } from "../lib/format";
+import { useMemo } from "react";
+import { presetFor, presetForTags, SCENE_TYPES, type SceneType } from "@artei/shared";
+import { VisualCanvas } from "../components/VisualCanvas";
+import { useCalm } from "../store/settings";
 
 export function Player() {
   const track = usePlayer((s) => s.queue[s.index]);
@@ -15,7 +19,17 @@ export function Player() {
   const error = usePlayer((s) => s.error);
   const navigate = useNavigate();
 
-  if (!track) return <Navigate to="/" replace />;
+  const calm = useCalm();
+  const { search } = useLocation();
+  const dna = useMemo(() => {
+    if (!track) return null;
+    // ?scene=aurora lets you preview any scene preset.
+    const forced = new URLSearchParams(search).get("scene") as SceneType | null;
+    if (forced && SCENE_TYPES.includes(forced)) return presetFor(forced);
+    return presetForTags(track.tags, hash(track.ref));
+  }, [track, search]);
+
+  if (!track || !dna) return <Navigate to="/" replace />;
   const [a, b] = trackHues(track.ref);
 
   return (
@@ -27,17 +41,13 @@ export function Player() {
       transition={{ type: "spring", stiffness: 260, damping: 32 }}
       className="fixed inset-0 z-40 flex flex-col overflow-hidden bg-ink"
     >
-      {/* Backdrop — replaced by the live visual engine in phase (b). */}
-      <div aria-hidden className="absolute inset-0">
-        <Artwork track={track} className="absolute inset-0 scale-125 opacity-60 blur-3xl" rounded="rounded-none" />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(80% 60% at 50% 30%, hsl(${a} 80% 50% / 0.25), transparent 70%),
-                         linear-gradient(to bottom, transparent 30%, hsl(${b} 40% 4% / 0.95))`,
-          }}
-        />
+      {/* Fallback gradient (visible if WebGL is unavailable), then the live visuals. */}
+      <div aria-hidden className="absolute inset-0"
+        style={{ background: `radial-gradient(80% 60% at 50% 30%, hsl(${a} 70% 40% / 0.5), transparent 70%), hsl(${b} 40% 6%)` }} />
+      <div className="absolute inset-0">
+        <VisualCanvas dna={dna} calm={calm} />
       </div>
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
 
       <header className="pt-safe relative z-10 flex items-center justify-between px-3">
         <button onClick={() => navigate(-1)} aria-label="Close player"
@@ -48,21 +58,12 @@ export function Player() {
         <div className="h-12 w-12" />
       </header>
 
-      <div className="relative z-10 flex flex-1 items-center justify-center px-8 py-4">
-        <motion.div
-          key={track.ref}
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: status === "playing" ? 1 : 0.94, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 22 }}
-          className="aspect-square w-full max-w-[min(70vw,46vh)] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]"
-        >
-          <Artwork track={track} className="h-full w-full" rounded="rounded-[2rem]" />
-        </motion.div>
-      </div>
+      <div className="relative z-10 flex-1" />
 
       <div className="pb-safe relative z-10 mx-auto w-full max-w-xl px-3">
         <div className="glass mb-3 rounded-[2rem] px-5 pb-5 pt-4">
-          <div className="flex items-start gap-2">
+          <div className="flex items-start gap-3">
+            <Artwork track={track} className="h-14 w-14 shrink-0" rounded="rounded-xl" />
             <div className="min-w-0 flex-1">
               <h1 className="truncate font-display text-2xl font-extrabold tracking-tight sm:text-3xl">{track.title}</h1>
               <p className="truncate text-mist">{track.artist}</p>
