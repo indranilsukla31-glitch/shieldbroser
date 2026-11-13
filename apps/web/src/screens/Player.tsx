@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertCircle, ChevronDown, Dna, Loader2, Maximize2, Minimize2, Music2, Timer } from "lucide-react";
+import { AlertCircle, ChevronDown, Clapperboard, Dna, Loader2, Maximize2, Minimize2, Music2, Timer, Wand2 } from "lucide-react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { presetFor, presetForTags, SCENE_TYPES, type SceneType } from "@artei/shared/client";
 import { usePlayer } from "../store/player";
@@ -18,6 +18,9 @@ import { Sheet } from "../components/Sheet";
 import { DnaCardActions, DnaCardFace } from "../components/DnaCard";
 import { LyricsOverlay, type LyricsOverlayHandle } from "../components/LyricsOverlay";
 import { LyricsSync } from "../components/LyricsSync";
+import { RemixSheet } from "../components/RemixSheet";
+import { ClipSheet } from "../components/ClipSheet";
+import type { ClipRecorder } from "../lib/clip";
 import { buildTimeline, lineAt } from "../lyrics/timing";
 import { hash, trackHues } from "../lib/format";
 import type { EngineFrame, VisualEngine } from "../visual/engine";
@@ -39,7 +42,7 @@ export function Player() {
   const anchors = useLyrics((s) => (track ? s.anchors[track.ref] : undefined));
   const loadLyrics = useLyrics((s) => s.load);
 
-  const [sheet, setSheet] = useState<null | "dna" | "sync">(null);
+  const [sheet, setSheet] = useState<null | "dna" | "sync" | "remix" | "clip">(null);
   const [focus, setFocus] = useState(false);
   const [focusHint, setFocusHint] = useState(false);
   const [engine, setEngine] = useState<VisualEngine | null>(null);
@@ -84,7 +87,18 @@ export function Player() {
     return () => ro.disconnect();
   }, [focus]);
 
-  const onFrame = useCallback((f: EngineFrame) => overlayRef.current?.draw(f), []);
+  const clipRef = useRef<ClipRecorder | null>(null);
+  const setRecorder = useCallback((r: ClipRecorder | null) => {
+    clipRef.current = r;
+  }, []);
+  const onFrame = useCallback((f: EngineFrame) => {
+    overlayRef.current?.draw(f);
+    clipRef.current?.drawFrame(); // must run right after render while the WebGL buffer is valid
+  }, []);
+  const getClipSources = useCallback(
+    () => (engine ? { visuals: engine.canvas, lyrics: overlayRef.current?.canvas ?? null } : null),
+    [engine],
+  );
 
   // Focus mode: hide all UI, go fullscreen where supported, Esc or tap to get out.
   const enterFocus = () => {
@@ -176,15 +190,12 @@ export function Player() {
                 <span className="truncate">{designing ? "Designing visuals…" : dna.sceneName}</span>
               </motion.button>
             </AnimatePresence>
-            <div className="flex shrink-0">
+            <div className="flex w-12 shrink-0 justify-end">
               {lines.length > 0 && (
                 <button onClick={() => setSheet("sync")} aria-label="Lyrics timing" className="grid h-12 w-10 place-items-center rounded-full hover:bg-white/10">
                   <Timer size={20} />
                 </button>
               )}
-              <button onClick={enterFocus} aria-label="Focus mode" className="grid h-12 w-10 place-items-center rounded-full hover:bg-white/10">
-                <Maximize2 size={20} />
-              </button>
             </div>
           </motion.header>
         )}
@@ -226,6 +237,11 @@ export function Player() {
               <div className="mt-1">
                 <Controls />
               </div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <ActionButton icon={<Wand2 size={18} />} label="Remix" onClick={() => setSheet("remix")} />
+                <ActionButton icon={<Clapperboard size={18} />} label="15s clip" onClick={() => setSheet("clip")} />
+                <ActionButton icon={<Maximize2 size={18} />} label="Focus" onClick={enterFocus} />
+              </div>
               <Credit track={track} className="mt-5 border-t border-white/10 pt-3" />
             </div>
           </motion.div>
@@ -239,6 +255,12 @@ export function Player() {
             <DnaCardActions record={record} track={track} />
           </>
         )}
+      </Sheet>
+      <Sheet open={sheet === "remix"} onClose={() => setSheet(null)} title="Remix the vibe">
+        <RemixSheet track={track} onDone={() => setSheet(null)} />
+      </Sheet>
+      <Sheet open={sheet === "clip"} onClose={() => setSheet(null)} title="15-second clip">
+        <ClipSheet track={track} dna={dna} getSources={getClipSources} setRecorder={setRecorder} />
       </Sheet>
       <Sheet open={sheet === "sync"} onClose={() => setSheet(null)} title="Lyrics timing">
         {lyrics && <LyricsSync trackRef={track.ref} lyrics={lyrics} lines={lines} />}
@@ -255,5 +277,15 @@ function CurrentLineForScreenReaders({ lines }: { lines: ReturnType<typeof build
     <p className="sr-only" aria-live="polite">
       {line?.text ?? ""}
     </p>
+  );
+}
+
+function ActionButton({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
+  return (
+    <motion.button whileTap={{ scale: 0.94 }} onClick={onClick}
+      className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-white/[0.08] text-sm font-semibold transition hover:bg-white/15">
+      {icon}
+      {label}
+    </motion.button>
   );
 }
