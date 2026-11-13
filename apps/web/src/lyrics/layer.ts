@@ -1,4 +1,4 @@
-import type { VisualDna } from "@artei/shared";
+import type { VisualDna } from "@artei/shared/client";
 import { FONT_STACKS, applyCase } from "../lib/fonts";
 import type { EngineFrame } from "../visual/engine";
 import { lineAt, type TimedLine } from "./timing";

@@ -36,7 +36,9 @@ export function installErrorHandler(app: FastifyInstance) {
     });
   });
 
-  app.setNotFoundHandler((req, reply) => {
-    reply.code(404).send({ error: { code: "not_found", message: `No route ${req.method} ${req.url}` } });
-  });
+  if (process.env.NODE_ENV !== "production") {
+    app.setNotFoundHandler((req, reply) => {
+      reply.code(404).send({ error: { code: "not_found", message: `No route ${req.method} ${req.url}` } });
+    });
+  }
 }

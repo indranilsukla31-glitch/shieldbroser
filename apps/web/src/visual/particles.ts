@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { PARTICLE_BEHAVIORS, PARTICLE_SHAPES, type VisualDna } from "@artei/shared";
+import { PARTICLE_BEHAVIORS, PARTICLE_SHAPES, type VisualDna } from "@artei/shared/client";
 
 const VERT = /* glsl */ `
 uniform float uT, uSize, uSpeed, uBehavior, uBurst, uHighs, uBass, uPixelRatio, uSizeBoost, uSpeedBoost, uCount;

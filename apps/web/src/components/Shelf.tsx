@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Track } from "@artei/shared";
+import type { Track } from "@artei/shared/client";
 import { TrackCard } from "./TrackCard";
 import { usePlayer } from "../store/player";
 
@@ -35,7 +35,7 @@ export function Shelf({ title, subtitle, load }: Props) {
       </div>
       {error ? (
         <p className="mx-4 rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-6 text-sm text-mist sm:mx-8">
-          Couldn't load this shelf. {error}
+          {navigator.onLine ? `Couldn't load this shelf. ${error}` : "You're offline. This shelf will load when you reconnect."}
         </p>
       ) : (
         <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-2 sm:scroll-px-8 sm:px-8">

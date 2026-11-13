@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { SceneType, VisualDna } from "@artei/shared";
+import type { SceneType, VisualDna } from "@artei/shared/client";
 import type { AudioFrame } from "../audio/analyser";
 import { sceneFragment, LIGHT_SCENES } from "./scenes";
 import { VERT } from "./scenes/common";

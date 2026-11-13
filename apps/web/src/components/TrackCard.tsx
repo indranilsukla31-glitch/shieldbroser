@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Play } from "lucide-react";
-import type { Track } from "@artei/shared";
+import type { Track } from "@artei/shared/client";
 import { Artwork } from "./Artwork";
 import { usePlayer } from "../store/player";
 

@@ -1,5 +1,5 @@
 import { ExternalLink } from "lucide-react";
-import type { Track } from "@artei/shared";
+import type { Track } from "@artei/shared/client";
 
 const SOURCE_NAME: Record<string, string> = { jamendo: "Jamendo", mock: "Artei offline demo" };
 

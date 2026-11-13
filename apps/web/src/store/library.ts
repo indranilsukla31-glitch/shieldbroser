@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Track } from "@artei/shared";
+import type { Track } from "@artei/shared/client";
 import { api } from "../api/client";
 
 interface LibraryState {

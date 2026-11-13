@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Track } from "@artei/shared";
+import type { Track } from "@artei/shared/client";
 import { trackHues } from "../lib/format";
 
 /** Album art, or a generated gradient when the catalog has none / it fails to load. */

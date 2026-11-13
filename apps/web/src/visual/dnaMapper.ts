@@ -1,4 +1,4 @@
-import type { AudioTarget, ColorRole, Moment, VisualDna } from "@artei/shared";
+import type { AudioTarget, ColorRole, Moment, VisualDna } from "@artei/shared/client";
 import type { AudioFrame } from "../audio/analyser";
 
 export interface FrameParams {

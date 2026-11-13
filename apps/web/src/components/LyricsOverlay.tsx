@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import type { VisualDna } from "@artei/shared";
+import type { VisualDna } from "@artei/shared/client";
 import { LyricsLayer } from "../lyrics/layer";
 import type { TimedLine } from "../lyrics/timing";
 import type { EngineFrame } from "../visual/engine";

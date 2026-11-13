@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { presetFor } from "@artei/shared";
+import { presetFor } from "@artei/shared/client";
 import { DnaMapper, momentAt } from "../dnaMapper";
 import type { AudioFrame } from "../../audio/analyser";
 

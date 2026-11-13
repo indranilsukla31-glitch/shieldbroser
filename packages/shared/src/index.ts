@@ -1,2 +1,2 @@
-export * from "./track.js";
-export * from "./visualDna.js";
+export * from "./client.js";
+export * from "./schema.js";

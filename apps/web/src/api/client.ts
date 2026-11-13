@@ -1,4 +1,4 @@
-import type { Lyrics, Mood, Track, TrackList, VisualDnaRecord } from "@artei/shared";
+import type { Lyrics, Mood, Track, TrackList, VisualDnaRecord } from "@artei/shared/client";
 
 export interface SavedCard {
   record: VisualDnaRecord;

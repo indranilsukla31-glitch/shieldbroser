@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { VisualDna } from "@artei/shared";
+import type { VisualDna } from "@artei/shared/client";
 import { VisualEngine, type EngineFrame } from "../visual/engine";
 import { analyser, audio, usePlayer } from "../store/player";
 

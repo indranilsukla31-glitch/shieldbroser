@@ -2,8 +2,11 @@ import Fastify, { type FastifyInstance } from "fastify";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
+import fastifyStatic from "@fastify/static";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import type { AppConfig } from "./config.js";
-import { resolveDbPath } from "./config.js";
+import { resolveDbPath, REPO_ROOT } from "./config.js";
 import { openDb, type Db } from "./db/client.js";
 import { Catalog } from "./sources/catalog.js";
 import { JamendoSource, type FetchLike } from "./sources/jamendo.js";
@@ -64,6 +67,30 @@ export async function buildApp(cfg: AppConfig, deps: AppDeps = {}): Promise<{ ap
   trackRoutes(app, catalog);
   libraryRoutes(app, db, catalog, ensureAnon);
   visualDnaRoutes(app, db, catalog, dnaService, ensureAnon);
+
+  // Production: serve the built PWA from the same origin (one deployable service).
+  const webDist = path.join(REPO_ROOT, "apps/web/dist");
+  if (cfg.NODE_ENV === "production" && existsSync(webDist)) {
+    await app.register(fastifyStatic, {
+      root: webDist,
+      wildcard: false,
+      setHeaders: (res, filePath) => {
+        const name = path.basename(filePath);
+        if (name === "sw.js" || name === "index.html" || name.endsWith(".webmanifest") || name === "registerSW.js") {
+          res.header("cache-control", "no-cache");
+        } else if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+          res.header("cache-control", "public, max-age=31536000, immutable");
+        }
+      },
+    });
+    // SPA fallback: any non-API GET without a file extension gets index.html.
+    app.setNotFoundHandler((req, reply) => {
+      if ((req.method === "GET" || req.method === "HEAD") && !req.url.startsWith("/api/") && !path.extname(req.url.split("?")[0]!)) {
+        return reply.header("cache-control", "no-cache").sendFile("index.html");
+      }
+      reply.code(404).send({ error: { code: "not_found", message: `No route ${req.method} ${req.url}` } });
+    });
+  }
 
   return { app, db };
 }

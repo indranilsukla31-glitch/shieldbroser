@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
-import type { Track } from "@artei/shared";
+import type { Track } from "@artei/shared/client";
 import { useLibrary } from "../store/library";
 
 export function LikeButton({ track, size = 20, className = "" }: { track: Track; size?: number; className?: string }) {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Search as SearchIcon, X } from "lucide-react";
-import type { Track } from "@artei/shared";
+import type { Track } from "@artei/shared/client";
 import { api } from "../api/client";
 import { TrackRow } from "../components/TrackRow";
 import { usePlayer } from "../store/player";

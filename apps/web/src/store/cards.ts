@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Track, VisualDnaRecord } from "@artei/shared";
+import type { Track, VisualDnaRecord } from "@artei/shared/client";
 import { api, type SavedCard } from "../api/client";
 
 interface CardsState {

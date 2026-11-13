@@ -1,4 +1,4 @@
-import type { VisualDna } from "@artei/shared";
+import type { VisualDna } from "@artei/shared/client";
 import { usePlayer } from "../store/player";
 import { momentAt } from "../visual/dnaMapper";
 

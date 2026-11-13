@@ -1,4 +1,4 @@
-import type { Lyrics } from "@artei/shared";
+import type { Lyrics } from "@artei/shared/client";
 
 export interface TimedLine {
   text: string;

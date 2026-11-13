@@ -1,4 +1,4 @@
-import type { FontFamily, VisualDna } from "@artei/shared";
+import type { FontFamily, VisualDna } from "@artei/shared/client";
 
 /** Bundled variable fonts for each Visual DNA typography family (all work offline). */
 export const FONT_STACKS: Record<FontFamily, string> = {

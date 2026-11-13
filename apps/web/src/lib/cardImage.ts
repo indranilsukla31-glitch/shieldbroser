@@ -1,4 +1,4 @@
-import { SCENE_LABELS, type Track, type VisualDnaRecord } from "@artei/shared";
+import { SCENE_LABELS, type Track, type VisualDnaRecord } from "@artei/shared/client";
 import { FONT_STACKS, ensureFont } from "./fonts";
 
 /** Wraps text onto lines no wider than maxWidth. */

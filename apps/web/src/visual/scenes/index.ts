@@ -1,4 +1,4 @@
-import type { SceneType } from "@artei/shared";
+import type { SceneType } from "@artei/shared/client";
 import { COMMON } from "./common";
 
 /**

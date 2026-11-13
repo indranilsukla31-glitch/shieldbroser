@@ -1,0 +1,20 @@
+# Render Blueprint — New → Blueprint, pick this repo, then fill in the two keys.
+services:
+  - type: web
+    name: artei
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: JAMENDO_CLIENT_ID
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-5-5
+      - key: COOKIE_SECRET
+        generateValue: true
+      # Render's free plan has no persistent disk: the cache, likes and cards
+      # reset on redeploys. Use a paid plan with a disk (mount /data) to keep them.
+      - key: DATABASE_PATH
+        value: /tmp/artei.db

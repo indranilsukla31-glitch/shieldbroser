@@ -1,4 +1,4 @@
-import type { Track } from "@artei/shared";
+import type { Track } from "@artei/shared/client";
 import { Artwork } from "./Artwork";
 import { formatTime } from "../lib/format";
 import { usePlayer } from "../store/player";

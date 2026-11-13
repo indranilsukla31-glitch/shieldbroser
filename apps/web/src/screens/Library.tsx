@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Dna, Heart, Play } from "lucide-react";
 import { useCards } from "../store/cards";
+import { useSettings, prefersReducedMotion } from "../store/settings";
 import { useVisuals } from "../store/visuals";
 import { Sheet } from "../components/Sheet";
 import { DnaCardActions, DnaCardFace } from "../components/DnaCard";
@@ -19,6 +20,8 @@ export function Library() {
   const setActive = useVisuals((s) => s.setActive);
   const navigate = useNavigate();
   const [open, setOpen] = useState<SavedCard | null>(null);
+  const calm = useSettings((s) => s.calm);
+  const setCalm = useSettings((s) => s.setCalm);
 
   const playWithCard = (c: SavedCard) => {
     if (!c.track) return;
@@ -71,6 +74,27 @@ export function Library() {
           );
         })}
       </div>
+      <h2 className="mt-10 text-sm font-semibold uppercase tracking-widest text-dim">Settings</h2>
+      <div className="mt-3 rounded-3xl border border-white/5 bg-white/[0.03] p-4">
+        <p className="font-medium">Calm visuals</p>
+        <p className="mt-0.5 text-sm text-mist">
+          Slower motion, no camera shake or flashes, gentle lyric fades.
+          {calm === "auto" && ` Following your device setting (currently ${prefersReducedMotion() ? "on" : "off"}).`}
+        </p>
+        <div role="radiogroup" aria-label="Calm visuals" className="mt-3 grid grid-cols-3 gap-2">
+          {(["auto", "on", "off"] as const).map((v) => (
+            <button key={v} role="radio" aria-checked={calm === v} onClick={() => setCalm(v)}
+              className={`h-11 rounded-2xl text-sm font-semibold capitalize transition ${calm === v ? "bg-fog text-ink" : "bg-white/10 hover:bg-white/15"}`}>
+              {v}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="mt-6 text-xs leading-relaxed text-dim">
+        Music streams from the Jamendo Creative Commons catalog; each track's artist and license are shown on the player.
+        Lyrics come only from what artists supply with their tracks. Visual DNA is designed by Claude.
+      </p>
+
       <Sheet open={open !== null} onClose={() => setOpen(null)} title="Visual DNA">
         {open && (
           <>

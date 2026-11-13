@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, ChevronDown, Dna, Loader2, Maximize2, Minimize2, Music2, Timer } from "lucide-react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { presetFor, presetForTags, SCENE_TYPES, type SceneType } from "@artei/shared";
+import { presetFor, presetForTags, SCENE_TYPES, type SceneType } from "@artei/shared/client";
 import { usePlayer } from "../store/player";
 import { useCalm } from "../store/settings";
 import { currentRecord, useVisuals } from "../store/visuals";

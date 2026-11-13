@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
-import { MOODS, MOOD_LABELS, type Mood } from "@artei/shared";
+import { Download } from "lucide-react";
+import { useInstallPrompt } from "../lib/pwa";
+import { MOODS, MOOD_LABELS, type Mood } from "@artei/shared/client";
 import { api } from "../api/client";
 import { Shelf } from "../components/Shelf";
 
@@ -19,6 +21,7 @@ function greeting() {
 }
 
 export function Home() {
+  const install = useInstallPrompt();
   return (
     <div className="overflow-x-clip pb-6">
       <header className="pt-safe relative px-4 pb-2 sm:px-8">
@@ -26,7 +29,14 @@ export function Home() {
         <div aria-hidden className="pointer-events-none absolute -right-20 -top-10 h-96 w-96 rounded-full bg-glow-2/20 blur-[100px]" />
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 200, damping: 24 }}
           className="relative pt-8">
-          <p className="text-sm font-medium text-mist">{greeting()}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-mist">{greeting()}</p>
+            {install && (
+              <button onClick={() => void install()} className="glass flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold">
+                <Download size={14} /> Install app
+              </button>
+            )}
+          </div>
           <h1 className="font-display text-5xl font-extrabold tracking-tight sm:text-6xl">
             artei<span className="text-glow">.</span>
           </h1>

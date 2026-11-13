@@ -1,5 +1,5 @@
 import { Minus, Plus, RotateCcw, Hand } from "lucide-react";
-import type { Lyrics } from "@artei/shared";
+import type { Lyrics } from "@artei/shared/client";
 import { audio, usePlayer } from "../store/player";
 import { useLyrics } from "../store/lyrics";
 import { lineAt, nudge, tapSync, type TimedLine } from "../lyrics/timing";

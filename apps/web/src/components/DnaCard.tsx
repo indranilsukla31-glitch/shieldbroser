@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Bookmark, BookmarkCheck, Share2, Sparkles } from "lucide-react";
-import { SCENE_LABELS, type Track, type VisualDnaRecord } from "@artei/shared";
+import { SCENE_LABELS, type Track, type VisualDnaRecord } from "@artei/shared/client";
 import { FONT_STACKS, applyCase } from "../lib/fonts";
 import { renderCardPng, shareOrDownload } from "../lib/cardImage";
 

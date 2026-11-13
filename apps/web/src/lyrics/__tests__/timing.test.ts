@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Lyrics } from "@artei/shared";
+import type { Lyrics } from "@artei/shared/client";
 import { buildTimeline, lineAt, nudge, tapSync } from "../timing";
 
 const close = (a: number[], b: number[]) => a.forEach((v, i) => expect(v).toBeCloseTo(b[i]!, 6));

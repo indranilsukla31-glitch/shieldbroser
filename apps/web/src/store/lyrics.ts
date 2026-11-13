@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Lyrics } from "@artei/shared";
+import type { Lyrics } from "@artei/shared/client";
 import { api } from "../api/client";
 import { loadLocal, saveLocal } from "./settings";
 import type { Anchor } from "../lyrics/timing";
