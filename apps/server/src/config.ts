@@ -25,6 +25,7 @@ const EnvSchema = z.object({
     .transform((v) => v === "1" || v.toLowerCase() === "true"),
   ANTHROPIC_API_KEY: z.string().default(""),
   ANTHROPIC_MODEL: z.string().default("claude-sonnet-5-5"),
+  REMIX_DAILY_LIMIT: z.coerce.number().int().min(0).default(10),
 });
 
 export type AppConfig = z.infer<typeof EnvSchema>;

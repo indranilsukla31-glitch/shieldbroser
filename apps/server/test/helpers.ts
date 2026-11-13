@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { buildApp } from "../src/app.js";
 import { loadConfig } from "../src/config.js";
 import type { FetchLike } from "../src/sources/jamendo.js";
+import type { DnaModel } from "../src/claude/model.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const jamendoFixture = JSON.parse(readFileSync(path.join(here, "fixtures/jamendo-tracks.json"), "utf8"));
@@ -45,7 +46,7 @@ export function fakeFetch(log: FakeFetchLog = { urls: [], headers: [] }, opts: {
   }) as FetchLike;
 }
 
-export async function makeApp(overrides: Record<string, string> = {}, fetch?: FetchLike) {
+export async function makeApp(overrides: Record<string, string> = {}, fetch?: FetchLike, dnaModel?: DnaModel | null) {
   const cfg = loadConfig({
     NODE_ENV: "test",
     DATABASE_PATH: ":memory:",
@@ -53,5 +54,5 @@ export async function makeApp(overrides: Record<string, string> = {}, fetch?: Fe
     MOCK_CATALOG: "0",
     ...overrides,
   });
-  return buildApp(cfg, { fetch: fetch ?? fakeFetch() });
+  return buildApp(cfg, { fetch: fetch ?? fakeFetch(), dnaModel });
 }

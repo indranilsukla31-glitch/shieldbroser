@@ -9,15 +9,23 @@ import { BottomNav } from "./components/BottomNav";
 import { MiniPlayer } from "./components/MiniPlayer";
 import { api } from "./api/client";
 import { useLibrary } from "./store/library";
+import { useCards } from "./store/cards";
 
 export function App() {
   const location = useLocation();
   const loadLibrary = useLibrary((s) => s.load);
+  const loadCards = useCards((s) => s.load);
 
   useEffect(() => {
     // Establish the anonymous session cookie, then load likes.
-    api.session().catch(() => {}).finally(() => void loadLibrary());
-  }, [loadLibrary]);
+    api
+      .session()
+      .catch(() => {})
+      .finally(() => {
+        void loadLibrary();
+        void loadCards();
+      });
+  }, [loadLibrary, loadCards]);
 
   return (
     <div className="min-h-dvh bg-ink text-fog">

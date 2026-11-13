@@ -89,6 +89,10 @@ export class VisualEngine {
   private height = 1;
   private calm: boolean;
   private shake = new THREE.Vector2();
+  private targets = {
+    uBg: new THREE.Color(), uC1: new THREE.Color(), uC2: new THREE.Color(), uC3: new THREE.Color(), uC4: new THREE.Color(),
+  };
+  private firstDna = true;
 
   constructor(canvas: HTMLCanvasElement, dna: VisualDna, private opts: EngineOptions) {
     this.canvas = canvas;
@@ -141,11 +145,17 @@ export class VisualEngine {
       this.sceneType = dna.scene.type;
       u.uFade.value = 0; // fade the new world in
     }
-    u.uBg.value.set(dna.palette.background);
-    u.uC1.value.set(dna.palette.primary);
-    u.uC2.value.set(dna.palette.secondary);
-    u.uC3.value.set(dna.palette.accent);
-    u.uC4.value.set(dna.palette.highlight);
+    const t = this.targets;
+    t.uBg.set(dna.palette.background);
+    t.uC1.set(dna.palette.primary);
+    t.uC2.set(dna.palette.secondary);
+    t.uC3.set(dna.palette.accent);
+    t.uC4.set(dna.palette.highlight);
+    // Jump straight to the palette on first load or a scene change; otherwise blend.
+    if (this.firstDna || u.uFade.value === 0) {
+      for (const k of Object.keys(t) as (keyof typeof t)[]) u[k].value.copy(t[k]);
+    }
+    this.firstDna = false;
     u.uComplexity.value = dna.scene.complexity;
     u.uGrain.value = dna.scene.grain;
     u.uTurb.value = dna.motion.turbulence;
@@ -230,6 +240,8 @@ export class VisualEngine {
     u.uBloom.value = m.bloom;
     u.uFlash.value = this.calm ? 0 : audio.beat * (0.4 + m.lyricScale * 0.3);
     u.uFade.value = Math.min(1, u.uFade.value + dt * 1.4);
+    const lerp = 1 - Math.exp(-dt * 1.8);
+    for (const k of Object.keys(this.targets) as (keyof typeof this.targets)[]) u[k].value.lerp(this.targets[k], lerp);
     const emph = dna.palette[params.emphasis];
     u.uEmph.value.set(emph);
 

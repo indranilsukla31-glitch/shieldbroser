@@ -1,4 +1,15 @@
-import type { Lyrics, Mood, Track, TrackList } from "@artei/shared";
+import type { Lyrics, Mood, Track, TrackList, VisualDnaRecord } from "@artei/shared";
+
+export interface SavedCard {
+  record: VisualDnaRecord;
+  track: Track | null;
+  savedAt: number;
+}
+export interface RemixAllowance {
+  limit: number;
+  used: number;
+  remaining: number;
+}
 
 export class ApiError extends Error {
   constructor(
@@ -46,4 +57,21 @@ export const api = {
   likes: () => req<TrackList>("/api/library/likes"),
   like: (ref: string) => req<{ liked: boolean }>(`/api/library/likes/${enc(ref)}`, { method: "PUT" }),
   unlike: (ref: string) => req<{ liked: boolean }>(`/api/library/likes/${enc(ref)}`, { method: "DELETE" }),
+  visualDna: (trackRef: string) =>
+    req<{ record: VisualDnaRecord }>("/api/visual-dna", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ trackRef }),
+    }),
+  card: (id: string) => req<{ record: VisualDnaRecord; track: Track | null }>(`/api/cards/${enc(id)}`),
+  cards: () => req<{ cards: SavedCard[] }>("/api/library/cards"),
+  saveCard: (id: string) => req<{ saved: boolean }>(`/api/library/cards/${enc(id)}`, { method: "PUT" }),
+  unsaveCard: (id: string) => req<{ saved: boolean }>(`/api/library/cards/${enc(id)}`, { method: "DELETE" }),
+  remix: (ref: string, prompt: string, baseId?: string) =>
+    req<{ record: VisualDnaRecord; allowance: RemixAllowance }>(`/api/visual-dna/${enc(ref)}/remix`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ prompt, baseId }),
+    }),
+  remixes: (ref: string) => req<{ records: VisualDnaRecord[]; allowance: RemixAllowance }>(`/api/visual-dna/${enc(ref)}/remixes`),
 };

@@ -14,10 +14,15 @@ import { makeEnsureAnon } from "./plugins/session.js";
 import { installErrorHandler } from "./routes/errors.js";
 import { trackRoutes } from "./routes/tracks.js";
 import { libraryRoutes } from "./routes/library.js";
+import { visualDnaRoutes } from "./routes/visualDna.js";
+import { ClaudeDnaModel, type DnaModel } from "./claude/model.js";
+import { VisualDnaService } from "./claude/service.js";
 
 export interface AppDeps {
   /** Override fetch for the Jamendo client (tests). */
   fetch?: FetchLike;
+  /** Override the Visual DNA model (tests). `null` = Claude disabled. */
+  dnaModel?: DnaModel | null;
 }
 
 export async function buildApp(cfg: AppConfig, deps: AppDeps = {}): Promise<{ app: FastifyInstance; db: Db }> {
@@ -39,15 +44,26 @@ export async function buildApp(cfg: AppConfig, deps: AppDeps = {}): Promise<{ ap
 
   installErrorHandler(app);
 
+  const model =
+    deps.dnaModel !== undefined
+      ? deps.dnaModel
+      : cfg.ANTHROPIC_API_KEY
+        ? new ClaudeDnaModel(cfg.ANTHROPIC_API_KEY, cfg.ANTHROPIC_MODEL)
+        : null;
+
   app.get("/api/health", async () => ({
     ok: true,
     catalog: cfg.MOCK_CATALOG ? "mock" : "jamendo",
     jamendoConfigured: Boolean(cfg.JAMENDO_CLIENT_ID),
-    claudeConfigured: Boolean(cfg.ANTHROPIC_API_KEY),
+    claudeConfigured: model !== null,
   }));
 
+  const dnaService = new VisualDnaService(db, catalog, model, app.log, cfg.REMIX_DAILY_LIMIT);
+  const ensureAnon = makeEnsureAnon(db, cfg.NODE_ENV === "production");
+
   trackRoutes(app, catalog);
-  libraryRoutes(app, db, catalog, makeEnsureAnon(db, cfg.NODE_ENV === "production"));
+  libraryRoutes(app, db, catalog, ensureAnon);
+  visualDnaRoutes(app, db, catalog, dnaService, ensureAnon);
 
   return { app, db };
 }

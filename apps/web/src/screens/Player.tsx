@@ -1,36 +1,50 @@
-import { motion } from "framer-motion";
-import { AlertCircle, ChevronDown } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, ChevronDown, Dna, Loader2 } from "lucide-react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { presetFor, presetForTags, SCENE_TYPES, type SceneType } from "@artei/shared";
 import { usePlayer } from "../store/player";
+import { useCalm } from "../store/settings";
+import { currentRecord, useVisuals } from "../store/visuals";
 import { Artwork } from "../components/Artwork";
 import { Controls } from "../components/Controls";
 import { SeekBar } from "../components/SeekBar";
 import { Credit } from "../components/Credit";
 import { LikeButton } from "../components/LikeButton";
-import { hash, trackHues } from "../lib/format";
-import { useMemo } from "react";
-import { presetFor, presetForTags, SCENE_TYPES, type SceneType } from "@artei/shared";
 import { VisualCanvas } from "../components/VisualCanvas";
-import { useCalm } from "../store/settings";
+import { MoodTimeline } from "../components/MoodTimeline";
+import { Sheet } from "../components/Sheet";
+import { DnaCardActions, DnaCardFace } from "../components/DnaCard";
+import { hash, trackHues } from "../lib/format";
 
 export function Player() {
   const track = usePlayer((s) => s.queue[s.index]);
   const status = usePlayer((s) => s.status);
   const error = usePlayer((s) => s.error);
   const navigate = useNavigate();
-
   const calm = useCalm();
   const { search } = useLocation();
+  const entry = useVisuals((s) => (track ? s.byRef[track.ref] : undefined));
+  const loadDna = useVisuals((s) => s.load);
+  const [cardOpen, setCardOpen] = useState(false);
+
+  useEffect(() => {
+    if (track) loadDna(track);
+  }, [track, loadDna]);
+
+  const record = currentRecord(entry);
   const dna = useMemo(() => {
     if (!track) return null;
-    // ?scene=aurora lets you preview any scene preset.
+    // ?scene=aurora previews any scene preset (handy for testing the engine).
     const forced = new URLSearchParams(search).get("scene") as SceneType | null;
     if (forced && SCENE_TYPES.includes(forced)) return presetFor(forced);
-    return presetForTags(track.tags, hash(track.ref));
-  }, [track, search]);
+    // Show a preset instantly; swap to Claude's Visual DNA as soon as it arrives.
+    return record?.dna ?? presetForTags(track.tags, hash(track.ref));
+  }, [track, search, record]);
 
   if (!track || !dna) return <Navigate to="/" replace />;
   const [a, b] = trackHues(track.ref);
+  const designing = entry?.status === "loading";
 
   return (
     <motion.div
@@ -49,13 +63,26 @@ export function Player() {
       </div>
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
 
-      <header className="pt-safe relative z-10 flex items-center justify-between px-3">
+      <header className="pt-safe relative z-10 flex items-center justify-between gap-2 px-3">
         <button onClick={() => navigate(-1)} aria-label="Close player"
-          className="grid h-12 w-12 place-items-center rounded-full hover:bg-white/10">
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-full hover:bg-white/10">
           <ChevronDown size={28} />
         </button>
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-mist">Now playing</p>
-        <div className="h-12 w-12" />
+        <AnimatePresence mode="wait">
+          <motion.button
+            key={designing ? "designing" : dna.sceneName}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+            onClick={() => record && setCardOpen(true)}
+            className="glass flex min-w-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold"
+            aria-label={designing ? "Claude is designing the visuals" : `Visual DNA: ${dna.sceneName}`}
+          >
+            {designing ? <Loader2 size={14} className="animate-spin" /> : <Dna size={14} className="text-glow" />}
+            <span className="truncate">{designing ? "Designing visuals…" : dna.sceneName}</span>
+          </motion.button>
+        </AnimatePresence>
+        <div className="h-12 w-12 shrink-0" />
       </header>
 
       <div className="relative z-10 flex-1" />
@@ -77,13 +104,23 @@ export function Player() {
           )}
           <div className="mt-3">
             <SeekBar />
+            <MoodTimeline dna={dna} />
           </div>
-          <div className="mt-2">
+          <div className="mt-1">
             <Controls />
           </div>
           <Credit track={track} className="mt-5 border-t border-white/10 pt-3" />
         </div>
       </div>
+
+      <Sheet open={cardOpen} onClose={() => setCardOpen(false)} title="Visual DNA">
+        {record && (
+          <>
+            <DnaCardFace record={record} track={track} />
+            <DnaCardActions record={record} track={track} />
+          </>
+        )}
+      </Sheet>
     </motion.div>
   );
 }
