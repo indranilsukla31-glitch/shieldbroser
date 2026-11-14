@@ -2,6 +2,7 @@ import { config as loadDotenv } from "dotenv";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { z } from "zod";
+import { randomBytes } from "node:crypto";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const SERVER_ROOT = path.resolve(here, "..");
@@ -38,7 +39,9 @@ export type AppConfig = z.infer<typeof EnvSchema>;
 export function loadConfig(overrides: Partial<Record<keyof AppConfig, string>> = {}): AppConfig {
   const cfg = EnvSchema.parse({ ...process.env, ...overrides });
   if (cfg.NODE_ENV === "production" && cfg.COOKIE_SECRET === "dev-only-insecure-cookie-secret") {
-    throw new Error("Set COOKIE_SECRET in production.");
+    // Don't refuse to start: use a random secret for this run (visitors get a new anonymous ID after restarts).
+    console.warn("COOKIE_SECRET is not set; using a random one for this run. Set it to keep sessions across restarts.");
+    cfg.COOKIE_SECRET = randomBytes(32).toString("hex");
   }
   return cfg;
 }
