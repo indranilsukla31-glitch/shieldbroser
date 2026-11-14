@@ -2,6 +2,7 @@ import type { Mood } from "@artei/shared";
 import { parseLicenseUrl } from "../lib/license.js";
 import { parseLyrics } from "../lib/lyrics.js";
 import { UpstreamError, type CatalogSource, type SourceTrack, type StreamResult } from "./types.js";
+import { hostAllowlist, proxyAudio } from "./stream.js";
 
 const API = "https://api.jamendo.com/v3.0";
 
@@ -23,14 +24,7 @@ const SPEED_BPM: Record<string, number> = {
 };
 
 /** Hosts we are willing to proxy audio from (prevents SSRF via the stream proxy). */
-export function isAllowedAudioHost(url: string): boolean {
-  try {
-    const u = new URL(url);
-    return u.protocol === "https:" && (u.hostname === "jamendo.com" || u.hostname.endsWith(".jamendo.com"));
-  } catch {
-    return false;
-  }
-}
+export const isAllowedAudioHost = hostAllowlist("jamendo.com");
 
 interface JamendoTrack {
   id: string;
@@ -153,35 +147,7 @@ export class JamendoSource implements CatalogSource {
     return t ?? null;
   }
 
-  async stream(audioUrl: string, range: string | undefined): Promise<StreamResult> {
-    let url = audioUrl;
-    // Follow redirects manually so every hop is checked against the allowlist.
-    for (let hop = 0; hop < 4; hop++) {
-      if (!isAllowedAudioHost(url)) throw new UpstreamError("Audio host not allowed", 502);
-      let res: Response;
-      try {
-        res = await this.fetchImpl(url, {
-          redirect: "manual",
-          headers: range ? { range } : {},
-          signal: AbortSignal.timeout(15_000),
-        });
-      } catch (e) {
-        throw new UpstreamError(`Audio fetch failed: ${(e as Error).message}`);
-      }
-      if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
-        url = new URL(res.headers.get("location")!, url).toString();
-        continue;
-      }
-      if (!res.ok || !res.body) throw new UpstreamError(`Audio HTTP ${res.status}`);
-      const headers: Record<string, string> = {};
-      for (const h of ["content-type", "content-length", "content-range", "accept-ranges"]) {
-        const v = res.headers.get(h);
-        if (v) headers[h] = v;
-      }
-      headers["content-type"] ??= "audio/mpeg";
-      headers["accept-ranges"] ??= "bytes";
-      return { status: res.status, headers, body: res.body };
-    }
-    throw new UpstreamError("Too many audio redirects");
+  stream(audioUrl: string, range: string | undefined): Promise<StreamResult> {
+    return proxyAudio(audioUrl, range, isAllowedAudioHost, this.fetchImpl);
   }
 }

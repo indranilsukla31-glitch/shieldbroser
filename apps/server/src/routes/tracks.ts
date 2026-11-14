@@ -12,6 +12,11 @@ export function trackRoutes(app: FastifyInstance, catalog: Catalog) {
     return { tracks: await catalog.trending(limit) };
   });
 
+  app.get("/api/tracks/classics", async (req) => {
+    const { limit } = z.object({ limit: Limit }).parse(req.query);
+    return { tracks: await catalog.classics(limit) };
+  });
+
   app.get("/api/tracks/mood/:mood", async (req) => {
     const { mood } = z.object({ mood: z.enum(MOODS) }).parse(req.params);
     const { limit } = z.object({ limit: Limit }).parse(req.query);

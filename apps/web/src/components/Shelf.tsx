@@ -7,9 +7,11 @@ interface Props {
   title: string;
   subtitle?: string;
   load: () => Promise<{ tracks: Track[] }>;
+  /** Hide the whole shelf when it has nothing (e.g. an optional catalog is off). */
+  optional?: boolean;
 }
 
-export function Shelf({ title, subtitle, load }: Props) {
+export function Shelf({ title, subtitle, load, optional }: Props) {
   const [tracks, setTracks] = useState<Track[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const playQueue = usePlayer((s) => s.playQueue);
@@ -24,6 +26,8 @@ export function Shelf({ title, subtitle, load }: Props) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (optional && (error || tracks?.length === 0)) return null;
 
   return (
     <section className="mt-8">

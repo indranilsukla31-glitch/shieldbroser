@@ -4,7 +4,7 @@ import { FONT_STACKS } from "./fonts";
 export const CLIP_SECONDS = 15;
 const W = 720;
 const H = 1280;
-const SOURCE_NAME: Record<string, string> = { jamendo: "Jamendo", mock: "Artei offline demo" };
+const SOURCE_NAME: Record<string, string> = { jamendo: "Jamendo", archive: "Internet Archive", mock: "Artei offline demo" };
 
 /** Clips sync music to moving images, which CC treats as an adaptation: not allowed for ND. */
 export function clipAllowed(track: Track): { ok: true } | { ok: false; reason: string } {

@@ -1,7 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import type { Track } from "@artei/shared/client";
 
-const SOURCE_NAME: Record<string, string> = { jamendo: "Jamendo", mock: "Artei offline demo" };
+const SOURCE_NAME: Record<string, string> = { jamendo: "Jamendo", archive: "Internet Archive", mock: "Artei offline demo" };
 
 /** Attribution as required by Creative Commons: title, artist, source, license + link. */
 export function Credit({ track, className = "" }: { track: Track; className?: string }) {

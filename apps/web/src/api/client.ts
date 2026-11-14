@@ -48,6 +48,7 @@ const enc = encodeURIComponent;
 export const api = {
   health: () => req<{ ok: boolean; catalog: string; jamendoConfigured: boolean; claudeConfigured: boolean }>("/api/health"),
   trending: (limit = 20) => req<TrackList>(`/api/tracks/trending?limit=${limit}`),
+  classics: (limit = 20) => req<TrackList>(`/api/tracks/classics?limit=${limit}`),
   mood: (mood: Mood, limit = 20) => req<TrackList>(`/api/tracks/mood/${mood}?limit=${limit}`),
   search: (q: string) => req<TrackList>(`/api/tracks/search?q=${enc(q)}`),
   track: (ref: string) => req<{ track: Track }>(`/api/tracks/${enc(ref)}`),

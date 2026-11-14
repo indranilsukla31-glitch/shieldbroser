@@ -11,6 +11,7 @@ import { openDb, type Db } from "./db/client.js";
 import { Catalog } from "./sources/catalog.js";
 import { JamendoSource, type FetchLike } from "./sources/jamendo.js";
 import { MockSource } from "./sources/mock.js";
+import { ArchiveSource } from "./sources/archive.js";
 import type { CatalogSource } from "./sources/types.js";
 import type { TrackSource } from "@artei/shared";
 import { makeEnsureAnon } from "./plugins/session.js";
@@ -43,7 +44,9 @@ export async function buildApp(cfg: AppConfig, deps: AppDeps = {}): Promise<{ ap
 
   const sources: Partial<Record<TrackSource, CatalogSource>> = { mock: new MockSource() };
   if (!cfg.MOCK_CATALOG) sources.jamendo = new JamendoSource(cfg.JAMENDO_CLIENT_ID, deps.fetch);
-  const catalog = new Catalog(db, sources, cfg.MOCK_CATALOG ? "mock" : "jamendo");
+  const archiveOn = !cfg.MOCK_CATALOG && cfg.ARCHIVE_ENABLED;
+  if (archiveOn) sources.archive = new ArchiveSource(deps.fetch);
+  const catalog = new Catalog(db, sources, cfg.MOCK_CATALOG ? "mock" : "jamendo", archiveOn ? "archive" : undefined);
 
   installErrorHandler(app);
 
@@ -58,6 +61,7 @@ export async function buildApp(cfg: AppConfig, deps: AppDeps = {}): Promise<{ ap
     ok: true,
     catalog: cfg.MOCK_CATALOG ? "mock" : "jamendo",
     jamendoConfigured: Boolean(cfg.JAMENDO_CLIENT_ID),
+    archiveEnabled: archiveOn,
     claudeConfigured: model !== null,
   }));
 

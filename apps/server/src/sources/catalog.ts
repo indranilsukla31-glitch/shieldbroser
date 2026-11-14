@@ -18,6 +18,8 @@ export class Catalog {
     private readonly db: Db,
     private readonly sources: Partial<Record<TrackSource, CatalogSource>>,
     private readonly primary: TrackSource,
+    /** Optional second catalog blended into focus and search, plus its own shelf. */
+    private readonly secondary?: TrackSource,
   ) {}
 
   private source(name: TrackSource): CatalogSource {
@@ -56,11 +58,69 @@ export class Catalog {
   }
 
   byMood(mood: Mood, limit = 20) {
+    // Focus gets public-domain classical recordings mixed in (1 in 3) when available.
+    if (mood === "focus" && this.secondary) {
+      return this.list(`mood:${mood}:${limit}`, () =>
+        this.blend(
+          () => this.source(this.primary).byMood(mood, limit),
+          () => this.source(this.secondary!).byMood(mood, Math.ceil(limit / 3)),
+          limit,
+          3,
+        ),
+      );
+    }
     return this.list(`mood:${mood}:${limit}`, () => this.source(this.primary).byMood(mood, limit));
   }
 
   search(q: string, limit = 20) {
+    if (this.secondary) {
+      return this.list(`search:${q.toLowerCase()}:${limit}`, () =>
+        this.blend(
+          () => this.source(this.primary).search(q, limit),
+          () => this.source(this.secondary!).search(q, Math.ceil(limit / 2)),
+          limit,
+          2,
+        ),
+      );
+    }
     return this.list(`search:${q.toLowerCase()}:${limit}`, () => this.source(this.primary).search(q, limit));
+  }
+
+  /** Public-domain / CC classical shelf (Internet Archive + Musopen). */
+  classics(limit = 20) {
+    if (!this.secondary) return Promise.resolve([]);
+    return this.list(`classics:${limit}`, () => this.source(this.secondary!).trending(limit));
+  }
+
+  get hasSecondary() {
+    return Boolean(this.secondary);
+  }
+
+  /**
+   * Interleave a secondary source into primary results (every `every`-th item).
+   * The secondary source is best-effort: its failures never break the shelf.
+   */
+  private async blend(
+    primary: () => Promise<SourceTrack[]>,
+    secondary: () => Promise<SourceTrack[]>,
+    limit: number,
+    every: number,
+  ): Promise<SourceTrack[]> {
+    const [a, b] = await Promise.allSettled([primary(), secondary()]);
+    const extra = b.status === "fulfilled" ? b.value : [];
+    if (a.status === "rejected") {
+      if (extra.length) return extra.slice(0, limit);
+      throw a.reason;
+    }
+    const out: SourceTrack[] = [];
+    const main = [...a.value];
+    let i = 0;
+    while (out.length < limit && (main.length || extra.length)) {
+      i++;
+      const next = i % every === 0 && extra.length ? extra.shift() : main.shift() ?? extra.shift();
+      if (next) out.push(next);
+    }
+    return out;
   }
 
   /** Resolve a track (and its server-only fields), using the SQLite cache when fresh. */

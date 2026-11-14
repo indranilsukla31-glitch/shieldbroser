@@ -8,8 +8,10 @@ Works as an installable PWA on Android and looks great on desktop.
 
 ## Features
 
-- **Streaming from Jamendo** (Creative Commons). Every player screen shows the title, artist, source link
-  and license with a link to its deed.
+- **Streaming from Jamendo** (Creative Commons) **and the Internet Archive / Musopen** (public-domain and CC
+  recordings, no key needed). Every player screen shows the title, artist, source link and license with a link
+  to its deed. Archive recordings get their own "Public-domain classics" shelf, are mixed into Focus (1 in 3)
+  and appear in search.
 - **Seven visual worlds** rendered with GLSL shaders + a particle field: nebula, liquid chrome, rain on glass,
   paper cutouts, neon city, aurora, ink in water. Bass, mids, highs and beats drive them through the Web Audio API.
 - **Visual DNA by Claude**: one Claude call per track (cached in SQLite). Claude returns parameters only — strict
@@ -56,6 +58,7 @@ Edit `.env`:
 | `ANTHROPIC_API_KEY` | Your Claude API key from <https://console.anthropic.com>. Without it, Artei uses built-in presets and Remix is off. |
 | `COOKIE_SECRET` | Any long random string. |
 | `MOCK_CATALOG` | `1` = offline demo catalog with synthesized audio (no keys needed). |
+| `ARCHIVE_ENABLED` | `1` (default) adds Internet Archive / Musopen recordings; `0` turns them off. |
 | `REMIX_DAILY_LIMIT` | Remixes per user per day (default 10). |
 
 Start it:
@@ -111,9 +114,9 @@ Preview any scene without Claude: open the player and add `?scene=aurora` (or `n
 |---|---|---|
 | GET | `/api/health` | active catalog, which keys are configured (never the keys) |
 | POST | `/api/session` | sets the signed, httpOnly anonymous-ID cookie |
-| GET | `/api/tracks/trending` · `/mood/:mood` · `/search?q=` | `mood` = chill, focus, workout, latenight |
-| GET | `/api/tracks/:ref` · `/api/tracks/:ref/lyrics` | `ref` = `jamendo:<id>` |
-| GET | `/api/stream/:ref` | audio proxy with HTTP Range; only proxies `*.jamendo.com` |
+| GET | `/api/tracks/trending` · `/mood/:mood` · `/search?q=` · `/classics` | `mood` = chill, focus, workout, latenight |
+| GET | `/api/tracks/:ref` · `/api/tracks/:ref/lyrics` | `ref` = `jamendo:<id>` or `archive:<identifier>~<file>` |
+| GET | `/api/stream/:ref` | audio proxy with HTTP Range; only proxies `*.jamendo.com` and `*.archive.org` |
 | POST | `/api/visual-dna` | `{ trackRef }` → cached or newly generated Visual DNA |
 | GET | `/api/visual-dna/:ref` | cached only |
 | POST | `/api/visual-dna/:ref/remix` | `{ prompt ≤140, baseId? }`, per-user daily limit + IP rate limit |
@@ -138,7 +141,9 @@ Cost: one call per track the first time anyone plays it, plus one per remix.
 
 ## Licensing rules the app follows
 
-- **Music**: Jamendo's Creative Commons catalog only. Credit (title, artist, source, license + deed link) is
+- **Music**: Jamendo's Creative Commons catalog, plus Internet Archive items from the `musopen` and
+  `opensource_audio` collections **only when the item's license is a public-domain mark/CC0 or a Creative
+  Commons license** — items without a clear license are skipped. Credit (title, artist, source, license + deed link) is
   shown on the player, on Visual DNA cards and inside exported clips. Unknown licenses are treated as most
   restrictive.
 - **Lyrics**: only artist-supplied lyrics returned by Jamendo with the track. Nothing is scraped.
@@ -152,8 +157,10 @@ Cost: one call per track the first time anyone plays it, plus one per remix.
 - On Android, playback is routed through Web Audio for the visuals. Lock-screen controls work; if your phone
   aggressively stops background audio for Chrome, add Artei/Chrome to the battery-optimisation exceptions.
 - iPhone Safari is not a target: the app runs, but install, lock-screen controls and clip export are limited there.
-- Internet Archive / Musopen public-domain recordings are a planned second catalog (the `source:id` track
-  references are designed for it).
+- Internet Archive items rely on the uploader's license field; Artei only trusts public-domain and Creative
+  Commons values there. Archive recordings have no lyrics.
+- If your host restricts outbound network access, allow `api.jamendo.com`, `*.storage.jamendo.com`,
+  `usercontent.jamendo.com`, `archive.org`, `*.archive.org` and `api.anthropic.com`.
 
 ## Database
 

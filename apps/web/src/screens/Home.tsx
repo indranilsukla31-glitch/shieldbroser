@@ -47,6 +47,7 @@ export function Home() {
       {MOODS.map((m) => (
         <Shelf key={m} title={MOOD_LABELS[m]} subtitle={MOOD_SUB[m]} load={() => api.mood(m)} />
       ))}
+      <Shelf title="Public-domain classics" subtitle="Musopen & Internet Archive recordings" load={() => api.classics()} optional />
     </div>
   );
 }

@@ -1,13 +1,14 @@
-/** A track reference is `<source>:<id>`, e.g. `jamendo:1234567`. */
-export type TrackSource = "jamendo" | "mock";
-export const TRACK_SOURCES: readonly TrackSource[] = ["jamendo", "mock"];
+/** A track reference is `<source>:<id>`, e.g. `jamendo:1234567` or `archive:some-item~3`. */
+export type TrackSource = "jamendo" | "archive" | "mock";
+export const TRACK_SOURCES: readonly TrackSource[] = ["jamendo", "archive", "mock"];
 
 export interface TrackRef {
   source: TrackSource;
   id: string;
 }
 
-const REF_RE = /^([a-z]+):([A-Za-z0-9_-]{1,64})$/;
+// Ids: Jamendo numbers, mock ids, or Internet Archive "<identifier>~<file index>".
+const REF_RE = /^([a-z]+):([A-Za-z0-9][A-Za-z0-9._-]{0,99}(?:~\d{1,4})?)$/;
 
 export function parseTrackRef(ref: string): TrackRef | null {
   const m = REF_RE.exec(ref);
