@@ -84,6 +84,16 @@ export const MOOD_LABELS: Record<Mood, string> = {
   latenight: "Late Night",
 };
 
+/** Curated catalog collections (shown first on Home — Indian music is the priority). */
+export const COLLECTIONS = ["hindi", "bollywood", "indian_classical"] as const;
+export type CollectionName = (typeof COLLECTIONS)[number];
+
+export const COLLECTION_LABELS: Record<CollectionName, { title: string; subtitle: string }> = {
+  hindi: { title: "Hindi songs", subtitle: "Hindi vocals from independent artists" },
+  bollywood: { title: "Bollywood & desi vibes", subtitle: "Filmi-style, bhangra and desi pop" },
+  indian_classical: { title: "Indian classical & fusion", subtitle: "Ragas, sitar, tabla, Carnatic & Hindustani" },
+};
+
 export interface TrackList {
   tracks: Track[];
 }

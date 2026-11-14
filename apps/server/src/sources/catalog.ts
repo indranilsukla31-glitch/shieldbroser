@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { parseTrackRef, type Lyrics, type Mood, type Track, type TrackSource } from "@artei/shared";
+import { parseTrackRef, type CollectionName, type Lyrics, type Mood, type Track, type TrackSource } from "@artei/shared";
 import type { Db } from "../db/client.js";
 import { tracks } from "../db/schema.js";
 import { UpstreamError, type CatalogSource, type SourceTrack } from "./types.js";
@@ -84,6 +84,21 @@ export class Catalog {
       );
     }
     return this.list(`search:${q.toLowerCase()}:${limit}`, () => this.source(this.primary).search(q, limit));
+  }
+
+  /** Curated Indian-music collections; Indian classical also blends in Archive recordings. */
+  collection(name: CollectionName, limit = 20) {
+    if (name === "indian_classical" && this.secondary) {
+      return this.list(`collection:${name}:${limit}`, () =>
+        this.blend(
+          () => this.source(this.primary).collection(name, limit),
+          () => this.source(this.secondary!).collection(name, Math.ceil(limit / 2)),
+          limit,
+          2,
+        ),
+      );
+    }
+    return this.list(`collection:${name}:${limit}`, () => this.source(this.primary).collection(name, limit));
   }
 
   /** Public-domain / CC classical shelf (Internet Archive + Musopen). */

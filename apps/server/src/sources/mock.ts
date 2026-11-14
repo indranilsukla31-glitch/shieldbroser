@@ -1,4 +1,4 @@
-import type { Mood } from "@artei/shared";
+import type { CollectionName, Mood } from "@artei/shared";
 import { parseLicenseUrl } from "../lib/license.js";
 import { parseLyrics } from "../lib/lyrics.js";
 import { parseRange } from "../lib/range.js";
@@ -118,6 +118,10 @@ export class MockSource implements CatalogSource {
     )
       .slice(0, limit)
       .map(toSource);
+  }
+
+  async collection(_name: CollectionName, _limit: number) {
+    return [];
   }
 
   async get(id: string) {

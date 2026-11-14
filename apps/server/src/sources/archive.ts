@@ -1,4 +1,4 @@
-import type { Mood, Track } from "@artei/shared";
+import type { CollectionName, Mood, Track } from "@artei/shared";
 import { parseLicenseUrl } from "../lib/license.js";
 import type { FetchLike } from "./jamendo.js";
 import { hostAllowlist, proxyAudio } from "./stream.js";
@@ -182,6 +182,16 @@ export class ArchiveSource implements CatalogSource {
   /** Musopen is classical: the same curated set suits every mood it's blended into. */
   byMood(_mood: Mood, limit: number) {
     return this.find(SHELF_COLLECTION, "", limit);
+  }
+
+  /** Indian classical recordings with explicit PD/CC licenses; the Archive has no Hindi pop. */
+  collection(name: CollectionName, limit: number) {
+    if (name !== "indian_classical") return Promise.resolve([]);
+    return this.find(
+      SEARCH_COLLECTIONS,
+      'subject:(raga OR hindustani OR carnatic OR sitar OR tabla OR "indian classical")',
+      limit,
+    );
   }
 
   search(q: string, limit: number) {

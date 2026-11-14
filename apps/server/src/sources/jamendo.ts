@@ -1,4 +1,4 @@
-import type { Mood } from "@artei/shared";
+import type { CollectionName, Mood } from "@artei/shared";
 import { parseLicenseUrl } from "../lib/license.js";
 import { parseLyrics } from "../lib/lyrics.js";
 import { UpstreamError, type CatalogSource, type SourceTrack, type StreamResult } from "./types.js";
@@ -12,6 +12,13 @@ const MOOD_QUERY: Record<Mood, Record<string, string>> = {
   focus: { fuzzytags: "ambient+piano+minimal+classical", vocalinstrumental: "instrumental" },
   workout: { fuzzytags: "electronic+dance+energetic+rock", speed: "high+veryhigh" },
   latenight: { fuzzytags: "lofi+jazz+triphop+night" },
+};
+
+/** Indian-music collections from Jamendo (lang = vocal language; tags are artist-supplied). */
+const COLLECTION_QUERY: Record<CollectionName, Record<string, string>> = {
+  hindi: { lang: "hi" },
+  bollywood: { fuzzytags: "bollywood+desi+bhangra+hindi+indian+filmi" },
+  indian_classical: { fuzzytags: "raga+sitar+tabla+carnatic+hindustani+indianclassical+bansuri+veena" },
 };
 
 /** Jamendo only gives a coarse speed; map it to an approximate BPM hint. */
@@ -136,6 +143,10 @@ export class JamendoSource implements CatalogSource {
 
   byMood(mood: Mood, limit: number) {
     return this.query({ ...MOOD_QUERY[mood], order: "popularity_month", groupby: "artist_id", limit: String(limit) });
+  }
+
+  collection(name: CollectionName, limit: number) {
+    return this.query({ ...COLLECTION_QUERY[name], order: "popularity_month", groupby: "artist_id", limit: String(limit) });
   }
 
   search(q: string, limit: number) {

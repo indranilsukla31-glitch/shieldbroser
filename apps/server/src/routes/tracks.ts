@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { MOODS, type Lyrics } from "@artei/shared";
+import { COLLECTIONS, MOODS, type Lyrics } from "@artei/shared";
 import type { Catalog } from "../sources/catalog.js";
 import { notFound } from "./errors.js";
 
@@ -15,6 +15,12 @@ export function trackRoutes(app: FastifyInstance, catalog: Catalog) {
   app.get("/api/tracks/classics", async (req) => {
     const { limit } = z.object({ limit: Limit }).parse(req.query);
     return { tracks: await catalog.classics(limit) };
+  });
+
+  app.get("/api/tracks/collection/:name", async (req) => {
+    const { name } = z.object({ name: z.enum(COLLECTIONS) }).parse(req.params);
+    const { limit } = z.object({ limit: Limit }).parse(req.query);
+    return { tracks: await catalog.collection(name, limit) };
   });
 
   app.get("/api/tracks/mood/:mood", async (req) => {

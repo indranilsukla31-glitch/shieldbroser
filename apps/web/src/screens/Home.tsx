@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Download } from "lucide-react";
 import { useInstallPrompt } from "../lib/pwa";
-import { MOODS, MOOD_LABELS, type Mood } from "@artei/shared/client";
+import { COLLECTIONS, COLLECTION_LABELS, MOODS, MOOD_LABELS, type Mood } from "@artei/shared/client";
 import { api } from "../api/client";
 import { Shelf } from "../components/Shelf";
 
@@ -43,6 +43,10 @@ export function Home() {
           <p className="mt-1 max-w-md text-sm text-mist">Free, Creative Commons music — and a living visual world for every song.</p>
         </motion.div>
       </header>
+      {/* Indian music first. */}
+      {COLLECTIONS.map((c) => (
+        <Shelf key={c} title={COLLECTION_LABELS[c].title} subtitle={COLLECTION_LABELS[c].subtitle} load={() => api.collection(c)} optional />
+      ))}
       <Shelf title="Trending this week" load={() => api.trending()} />
       {MOODS.map((m) => (
         <Shelf key={m} title={MOOD_LABELS[m]} subtitle={MOOD_SUB[m]} load={() => api.mood(m)} />

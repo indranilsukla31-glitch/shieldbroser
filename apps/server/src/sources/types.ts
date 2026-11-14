@@ -1,4 +1,4 @@
-import type { Lyrics, Mood, Track } from "@artei/shared";
+import type { CollectionName, Lyrics, Mood, Track } from "@artei/shared";
 
 /** A track as returned by a catalog, including server-only fields. */
 export interface SourceTrack {
@@ -19,6 +19,8 @@ export interface CatalogSource {
   trending(limit: number): Promise<SourceTrack[]>;
   byMood(mood: Mood, limit: number): Promise<SourceTrack[]>;
   search(query: string, limit: number): Promise<SourceTrack[]>;
+  /** Curated collections this source can supply (empty when it has none). */
+  collection(name: CollectionName, limit: number): Promise<SourceTrack[]>;
   get(id: string): Promise<SourceTrack | null>;
   stream(audioUrl: string, range: string | undefined): Promise<StreamResult>;
 }

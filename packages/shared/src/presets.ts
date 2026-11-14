@@ -135,6 +135,8 @@ export function presetFor(scene: SceneType): VisualDna {
 }
 
 const TAG_SCENES: [RegExp, SceneType][] = [
+  [/raga|sitar|tabla|carnatic|hindustani|bansuri|veena|devotional|bhajan|sufi|qawwali/i, "paper_cutouts"],
+  [/bollywood|bhangra|desi|filmi|punjabi/i, "neon_city"],
   [/synthwave|retro|80s|night|electro|house|techno|edm|club/i, "neon_city"],
   [/rain|lofi|lo-fi|jazz|blues|sad|melanchol/i, "rain_on_glass"],
   [/ambient|space|cosmic|drone|dream|newage|meditat/i, "nebula"],

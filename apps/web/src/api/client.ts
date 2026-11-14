@@ -1,4 +1,4 @@
-import type { Lyrics, Mood, Track, TrackList, VisualDnaRecord } from "@artei/shared/client";
+import type { CollectionName, Lyrics, Mood, Track, TrackList, VisualDnaRecord } from "@artei/shared/client";
 
 export interface SavedCard {
   record: VisualDnaRecord;
@@ -48,6 +48,7 @@ const enc = encodeURIComponent;
 export const api = {
   health: () => req<{ ok: boolean; catalog: string; jamendoConfigured: boolean; claudeConfigured: boolean }>("/api/health"),
   trending: (limit = 20) => req<TrackList>(`/api/tracks/trending?limit=${limit}`),
+  collection: (name: CollectionName, limit = 20) => req<TrackList>(`/api/tracks/collection/${name}?limit=${limit}`),
   classics: (limit = 20) => req<TrackList>(`/api/tracks/classics?limit=${limit}`),
   mood: (mood: Mood, limit = 20) => req<TrackList>(`/api/tracks/mood/${mood}?limit=${limit}`),
   search: (q: string) => req<TrackList>(`/api/tracks/search?q=${enc(q)}`),
