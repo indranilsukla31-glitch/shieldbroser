@@ -4,8 +4,11 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { Home } from "./screens/Home";
 import { Search } from "./screens/Search";
 import { Library } from "./screens/Library";
+import { YouTube } from "./screens/YouTube";
+import { YouTubeHost } from "./components/YouTubeHost";
 // The player (three.js + shaders) loads on demand so Home stays light.
 const Player = lazy(() => import("./screens/Player").then((m) => ({ default: m.Player })));
+const YouTubeWatch = lazy(() => import("./screens/YouTubeWatch").then((m) => ({ default: m.YouTubeWatch })));
 import { BottomNav } from "./components/BottomNav";
 import { MiniPlayer } from "./components/MiniPlayer";
 import { api } from "./api/client";
@@ -43,7 +46,9 @@ export function App() {
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
           <Route path="/library" element={<Library />} />
+          <Route path="/yt" element={<YouTube />} />
           <Route path="/now" element={null} />
+          <Route path="/yt/watch" element={null} />
         </Routes>
       </main>
       <div className="fixed inset-x-0 bottom-0 z-30">
@@ -52,7 +57,9 @@ export function App() {
       </div>
       <Suspense fallback={null}>
         <AnimatePresence>{location.pathname === "/now" && <Player />}</AnimatePresence>
+        <AnimatePresence>{location.pathname === "/yt/watch" && <YouTubeWatch />}</AnimatePresence>
       </Suspense>
+      <YouTubeHost />
     </div>
   );
 }

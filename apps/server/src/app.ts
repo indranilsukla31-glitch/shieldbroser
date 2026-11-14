@@ -21,6 +21,8 @@ import { libraryRoutes } from "./routes/library.js";
 import { visualDnaRoutes } from "./routes/visualDna.js";
 import { ClaudeDnaModel, type DnaModel } from "./claude/model.js";
 import { VisualDnaService } from "./claude/service.js";
+import { YouTubeService } from "./youtube/service.js";
+import { youtubeRoutes } from "./routes/youtube.js";
 
 export interface AppDeps {
   /** Override fetch for the Jamendo client (tests). */
@@ -57,12 +59,15 @@ export async function buildApp(cfg: AppConfig, deps: AppDeps = {}): Promise<{ ap
         ? new ClaudeDnaModel(cfg.ANTHROPIC_API_KEY, cfg.ANTHROPIC_MODEL)
         : null;
 
+  const youtube = new YouTubeService(cfg.YOUTUBE_API_KEY, deps.fetch);
+
   app.get("/api/health", async () => ({
     ok: true,
     catalog: cfg.MOCK_CATALOG ? "mock" : "jamendo",
     jamendoConfigured: Boolean(cfg.JAMENDO_CLIENT_ID),
     archiveEnabled: archiveOn,
     claudeConfigured: model !== null,
+    youtubeEnabled: youtube.configured,
   }));
 
   const dnaService = new VisualDnaService(db, catalog, model, app.log, cfg.REMIX_DAILY_LIMIT);
@@ -71,6 +76,7 @@ export async function buildApp(cfg: AppConfig, deps: AppDeps = {}): Promise<{ ap
   trackRoutes(app, catalog);
   libraryRoutes(app, db, catalog, ensureAnon);
   visualDnaRoutes(app, db, catalog, dnaService, ensureAnon);
+  youtubeRoutes(app, youtube);
 
   // Production: serve the built PWA from the same origin (one deployable service).
   const webDist = path.join(REPO_ROOT, "apps/web/dist");

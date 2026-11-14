@@ -1,4 +1,4 @@
-import type { CollectionName, Lyrics, Mood, Track, TrackList, VisualDnaRecord } from "@artei/shared/client";
+import type { CollectionName, Lyrics, Mood, Track, TrackList, VisualDnaRecord, YtPlaylist, YtShelfName, YtVideo } from "@artei/shared/client";
 
 export interface SavedCard {
   record: VisualDnaRecord;
@@ -46,7 +46,14 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
 const enc = encodeURIComponent;
 
 export const api = {
-  health: () => req<{ ok: boolean; catalog: string; jamendoConfigured: boolean; claudeConfigured: boolean }>("/api/health"),
+  yt: {
+    status: () => req<{ enabled: boolean }>("/api/youtube/status"),
+    shelf: (name: YtShelfName) => req<{ videos: YtVideo[] }>(`/api/youtube/shelf/${name}`),
+    search: (q: string, lyrical: boolean) => req<{ videos: YtVideo[] }>(`/api/youtube/search?q=${enc(q)}&lyrical=${lyrical ? 1 : 0}`),
+    albums: (q = "") => req<{ playlists: YtPlaylist[] }>(`/api/youtube/albums?q=${enc(q)}`),
+    playlist: (id: string) => req<{ videos: YtVideo[] }>(`/api/youtube/playlist/${enc(id)}`),
+  },
+  health: () => req<{ ok: boolean; catalog: string; jamendoConfigured: boolean; claudeConfigured: boolean; youtubeEnabled?: boolean }>("/api/health"),
   trending: (limit = 20) => req<TrackList>(`/api/tracks/trending?limit=${limit}`),
   collection: (name: CollectionName, limit = 20) => req<TrackList>(`/api/tracks/collection/${name}?limit=${limit}`),
   classics: (limit = 20) => req<TrackList>(`/api/tracks/classics?limit=${limit}`),

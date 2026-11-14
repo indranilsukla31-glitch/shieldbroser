@@ -37,7 +37,8 @@ export function makeEnsureAnon(db: Db, secureCookies: boolean) {
       signed: true,
       httpOnly: true,
       sameSite: "lax",
-      secure: secureCookies,
+      // Plain-HTTP LAN access (e.g. the Android app talking to a home PC) needs a non-secure cookie.
+      secure: secureCookies && req.protocol === "https",
       path: "/",
       maxAge: ONE_YEAR_S,
     });

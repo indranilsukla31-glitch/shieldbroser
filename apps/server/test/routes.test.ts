@@ -14,7 +14,7 @@ describe("health", () => {
     ({ app } = await makeApp({ ANTHROPIC_API_KEY: "sk-secret" }));
     const res = await app.inject("/api/health");
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ ok: true, catalog: "jamendo", jamendoConfigured: true, archiveEnabled: true, claudeConfigured: true });
+    expect(res.json()).toEqual({ ok: true, catalog: "jamendo", jamendoConfigured: true, archiveEnabled: true, claudeConfigured: true, youtubeEnabled: false });
     expect(res.body).not.toContain("sk-secret");
   });
 });

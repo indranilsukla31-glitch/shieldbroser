@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Download } from "lucide-react";
+import { Download, Flame } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useInstallPrompt } from "../lib/pwa";
 import { COLLECTIONS, COLLECTION_LABELS, MOODS, MOOD_LABELS, type Mood } from "@artei/shared/client";
 import { api } from "../api/client";
@@ -43,6 +44,13 @@ export function Home() {
           <p className="mt-1 max-w-md text-sm text-mist">Free, Creative Commons music — and a living visual world for every song.</p>
         </motion.div>
       </header>
+      <Link to="/yt" className="relative mx-4 mt-6 flex items-center gap-4 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-rose-500/25 via-amber-400/15 to-transparent p-4 sm:mx-8">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-fog text-ink"><Flame size={22} /></span>
+        <span className="min-w-0">
+          <span className="block font-display text-lg font-bold">Bollywood hits, new &amp; old</span>
+          <span className="block text-sm text-mist">Trending, albums and golden-era classics via YouTube</span>
+        </span>
+      </Link>
       {/* Indian music first. */}
       {COLLECTIONS.map((c) => (
         <Shelf key={c} title={COLLECTION_LABELS[c].title} subtitle={COLLECTION_LABELS[c].subtitle} load={() => api.collection(c)} optional />

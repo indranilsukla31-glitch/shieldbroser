@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { VisualDna } from "@artei/shared/client";
 import { VisualEngine, type EngineFrame } from "../visual/engine";
+import type { AudioFrame } from "../audio/analyser";
 import { analyser, audio, usePlayer } from "../store/player";
 
 interface Props {
@@ -9,14 +10,18 @@ interface Props {
   onFrame?: (f: EngineFrame) => void;
   onEngine?: (e: VisualEngine | null) => void;
   className?: string;
+  /** Alternative audio source (YouTube mode's synthetic beat). Defaults to Artei's player. */
+  source?: { getAudio(dt: number): AudioFrame; isPlaying(): boolean; getProgress(): number };
 }
 
 /** Full-bleed WebGL canvas running the visual engine for the current track. */
-export function VisualCanvas({ dna, calm, onFrame, onEngine, className = "" }: Props) {
+export function VisualCanvas({ dna, calm, onFrame, onEngine, className = "", source }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<VisualEngine | null>(null);
   const frameCb = useRef(onFrame);
   frameCb.current = onFrame;
+  const src = useRef(source);
+  src.current = source;
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -24,12 +29,13 @@ export function VisualCanvas({ dna, calm, onFrame, onEngine, className = "" }: P
     try {
       engine = new VisualEngine(canvas, dna, {
         calm,
-        getAudio: (dt) => analyser.frame(dt, !audio.paused),
+        getAudio: (dt) => src.current?.getAudio(dt) ?? analyser.frame(dt, !audio.paused),
         getProgress: () => {
+          if (src.current) return src.current.getProgress();
           const { position, duration } = usePlayer.getState();
           return duration > 0 ? position / duration : 0;
         },
-        isPlaying: () => !audio.paused,
+        isPlaying: () => src.current?.isPlaying() ?? !audio.paused,
         onFrame: (f) => frameCb.current?.(f),
         tier: (new URLSearchParams(location.search).get("tier") as "low" | "mid" | "high" | null) ?? undefined,
       });
