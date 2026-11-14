@@ -5,3 +5,4 @@ apps/web/dist
 *.db
 *.db-*
 .git
+apps/android

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ink">#FF07060B</color>
+    <color name="fog">#FFF4F1FB</color>
+    <color name="mist">#FFB9B3C9</color>
+    <color name="glow">#FFFF4F9A</color>
+</resources>

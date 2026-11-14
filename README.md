@@ -25,6 +25,10 @@ Works as an installable PWA on Android and looks great on desktop.
 - **Remix the vibe**: "make it feel like a monsoon evening" → Claude adjusts the DNA (10 remixes/day per user).
 - **15-second clip export**: vertical video of the visuals, lyrics and audio with the credit and license burned
   in. Disabled for NoDerivatives (ND) tracks, because syncing music to video counts as an adaptation.
+- **Hits (YouTube mode)**: trending-in-India music chart, new Hindi and Punjabi releases, romantic, 90s and
+  golden-era shelves, album jukeboxes and search — played in YouTube's official embedded player, framed by
+  Artei's visual scenes. Optional; needs `YOUTUBE_API_KEY`. See "YouTube mode" below.
+- **Android app (beta)**: `apps/android`, a small native wrapper you install from an APK.
 - **Focus mode**, **calm visuals** (follows `prefers-reduced-motion`), automatic quality scaling for weaker phones,
   render loop paused in hidden tabs.
 - **PWA**: install button, offline app shell, lock-screen / notification media controls.
@@ -60,6 +64,7 @@ Edit `.env`:
 | `MOCK_CATALOG` | `1` = offline demo catalog with synthesized audio (no keys needed). |
 | `ARCHIVE_ENABLED` | `1` (default) adds Internet Archive / Musopen recordings; `0` turns them off. |
 | `REMIX_DAILY_LIMIT` | Remixes per user per day (default 10). |
+| `YOUTUBE_API_KEY` | Optional. Turns on Hits / YouTube mode. Google Cloud Console → enable *YouTube Data API v3* → Credentials → API key. |
 
 Start it:
 
@@ -92,10 +97,42 @@ For persistence, use a paid instance with a disk mounted at `/data` and set `DAT
 **Railway / any Docker host:** deploy the `Dockerfile`, set the same environment variables, and mount a volume
 at `/data` (the default `DATABASE_PATH`). The container listens on `$PORT` (default 8787).
 
+## YouTube mode (Hits)
+
+Mainstream Bollywood songs aren't available under free licenses, so Artei doesn't stream them itself. Instead the
+**Hits** tab lists them via the YouTube Data API (server-side, key never sent to the browser, results cached for
+hours to stay inside the free 10,000-units/day quota) and plays them in **YouTube's official IFrame player**:
+
+- The video stays visible (YouTube's terms), and YouTube's ads and Premium status apply as on youtube.com.
+- Artei can't read audio inside YouTube's player, so the visuals follow a tempo instead: **Tap beat** locks them
+  to the song. Change the scene with the ✦ button.
+- **Lyrics**: "Lyric videos first" prefers official lyric videos; **Lyric video** swaps the current song for its lyric
+  video; **Captions** turns on YouTube's captions when the video has them. Artei doesn't fetch lyrics for these songs.
+- Clip export, Visual DNA by Claude and likes are for Artei's own catalog only.
+- If you set outbound allowlists: `www.googleapis.com` (server), and `www.youtube.com`, `*.ytimg.com`,
+  `*.googlevideo.com` (phone/browser).
+
+## Android app (beta APK)
+
+`apps/android` is a small WebView wrapper (no Google Play Services needed). On first launch it asks for your
+Artei address — the Render URL, or `http://<your-computer's-IP>:8787` when Artei runs on a computer on the same
+Wi-Fi (`npm run build && npm start`). Back at the top screen → *Change address*. Saved clips go to
+`Downloads/Artei`. Links (licenses, "Open in YouTube") open in the right app.
+
+Build it (JDK 17+, Android SDK with platform 35):
+
+```bash
+cd apps/android
+echo "sdk.dir=/path/to/Android/sdk" > local.properties
+./gradlew assembleRelease     # unsigned unless ARTEI_KEYSTORE + ARTEI_KEYSTORE_PASSWORD are set
+```
+
+Install on the phone: copy the APK over, open it, and allow "Install unknown apps" for your file manager when asked.
+
 ## Test
 
 ```bash
-npm test             # server (41) + web (14) tests — no network or keys needed
+npm test             # server (57) + web (18) tests — no network or keys needed
 npm run typecheck
 ```
 
@@ -160,7 +197,7 @@ Cost: one call per track the first time anyone plays it, plus one per remix.
 - Internet Archive items rely on the uploader's license field; Artei only trusts public-domain and Creative
   Commons values there. Archive recordings have no lyrics.
 - If your host restricts outbound network access, allow `api.jamendo.com`, `*.storage.jamendo.com`,
-  `usercontent.jamendo.com`, `archive.org`, `*.archive.org` and `api.anthropic.com`.
+  `usercontent.jamendo.com`, `archive.org`, `*.archive.org`, `api.anthropic.com` and (YouTube mode) `www.googleapis.com`.
 
 ## Database
 

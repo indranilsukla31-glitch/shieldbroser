@@ -1,0 +1,42 @@
+plugins {
+    id "com.android.application"
+}
+
+// Release signing comes from environment variables so no key ever lives in the repo.
+def ks = System.getenv("ARTEI_KEYSTORE")
+
+android {
+    namespace "app.artei.android"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "app.artei.android"
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName "0.1.0-beta"
+    }
+
+    signingConfigs {
+        if (ks) {
+            release {
+                storeFile file(ks)
+                storePassword System.getenv("ARTEI_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ARTEI_KEY_ALIAS") ?: "artei"
+                keyPassword System.getenv("ARTEI_KEY_PASSWORD") ?: System.getenv("ARTEI_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (ks) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
