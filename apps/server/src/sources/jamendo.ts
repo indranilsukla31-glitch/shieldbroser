@@ -97,7 +97,20 @@ export class JamendoSource implements CatalogSource {
     private readonly fetchImpl: FetchLike = fetch,
   ) {}
 
+  /**
+   * Jamendo's API intermittently answers a valid query with zero results, so
+   * retry empty answers a couple of times before believing them.
+   */
   private async query(params: Record<string, string>): Promise<SourceTrack[]> {
+    let results: SourceTrack[] = [];
+    for (let attempt = 0; attempt < 3; attempt++) {
+      results = await this.queryOnce(params);
+      if (results.length > 0) break;
+    }
+    return results;
+  }
+
+  private async queryOnce(params: Record<string, string>): Promise<SourceTrack[]> {
     if (!this.clientId) throw new UpstreamError("JAMENDO_CLIENT_ID is not configured", 503);
     const qs = new URLSearchParams({
       client_id: this.clientId,

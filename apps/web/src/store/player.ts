@@ -62,7 +62,16 @@ export const usePlayer = create<PlayerState>((set, get) => {
   });
   audio.addEventListener("error", () => {
     if (!audio.src) return;
-    set({ status: "error", error: "This track failed to load. Try the next one." });
+    const { index, queue } = get();
+    // Catalog tracks occasionally disappear upstream: skip ahead instead of stopping.
+    if (index < queue.length - 1) {
+      set({ status: "loading", error: undefined });
+      setTimeout(() => {
+        if (get().index === index) load(index + 1);
+      }, 800);
+      return;
+    }
+    set({ status: "error", error: "This track failed to load." });
   });
 
   return {

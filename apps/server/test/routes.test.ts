@@ -53,6 +53,22 @@ describe("tracks (Jamendo, faked network)", () => {
     expect(log.urls).toHaveLength(1);
   });
 
+  it("retries when Jamendo intermittently returns no results, and doesn't cache empties", async () => {
+    let calls = 0;
+    const base = fakeFetch();
+    const flaky = (async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (url.startsWith("https://api.jamendo.com/") && calls++ < 2) {
+        return new Response(JSON.stringify({ headers: { status: "success", code: 0 }, results: [] }));
+      }
+      return base(input, init);
+    }) as typeof fetch;
+    ({ app } = await makeApp({}, flaky));
+    const res = await app.inject("/api/tracks/trending");
+    expect(res.json().tracks).toHaveLength(2);
+    expect(calls).toBe(3);
+  });
+
   it("validates mood and search params", async () => {
     ({ app } = await makeApp());
     expect((await app.inject("/api/tracks/mood/sad")).statusCode).toBe(400);

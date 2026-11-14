@@ -46,7 +46,8 @@ export class Catalog {
     const items = await load();
     this.save(items);
     const out = items.map((i) => i.track);
-    this.listCache.set(key, { at: Date.now(), refs: out });
+    // Don't cache an empty shelf: it's usually a transient catalog hiccup.
+    if (out.length > 0) this.listCache.set(key, { at: Date.now(), refs: out });
     return out;
   }
 
