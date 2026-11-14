@@ -10,7 +10,7 @@ Works as an installable PWA on Android and looks great on desktop.
 
 - **Streaming from Jamendo** (Creative Commons) **and the Internet Archive / Musopen** (public-domain and CC
   recordings, no key needed). Every player screen shows the title, artist, source link and license with a link
-  to its deed. Archive recordings get their own "Public-domain classics" shelf, are mixed into Focus (1 in 3)
+  to its deed. Archive recordings get their own "Open archive" shelf, are mixed into Focus (1 in 3)
   and appear in search.
 - **Seven visual worlds** rendered with GLSL shaders + a particle field: nebula, liquid chrome, rain on glass,
   paper cutouts, neon city, aurora, ink in water. Bass, mids, highs and beats drive them through the Web Audio API.

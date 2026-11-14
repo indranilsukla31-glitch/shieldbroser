@@ -13,23 +13,24 @@ import { UpstreamError, type CatalogSource, type SourceTrack, type StreamResult 
  * license are skipped entirely.
  */
 const BASE = "https://archive.org";
-const COLLECTIONS = "collection:(musopen OR opensource_audio)";
-const LICENSED = "licenseurl:(*publicdomain* OR *creativecommons.org/licenses*)";
+/**
+ * Shelves: Musopen plus classical-tagged items from the open-source audio collection
+ * (only a handful of Musopen items carry a license field). Search covers both collections.
+ */
+const SHELF_COLLECTION =
+  '(collection:musopen OR (collection:opensource_audio AND subject:(classical OR "classical music" OR piano OR symphony OR sonata OR baroque)))';
+const SEARCH_COLLECTIONS = "collection:(musopen OR opensource_audio)";
+// The search backend rejects leading wildcards, so only require that a license URL exists here;
+// the strict public-domain / Creative Commons check happens on every item in itemToTracks.
+const HAS_LICENSE = "licenseurl:http*";
 const META_TTL_MS = 60 * 60 * 1000;
 const TRACKS_PER_ITEM = 2;
 
 export const isAllowedArchiveHost = hostAllowlist("archive.org");
 
-/** Extra search terms per mood (classical leans focus / chill / late night). */
-const MOOD_TERMS: Record<Mood, string> = {
-  chill: "subject:(piano OR nocturne OR adagio OR ambient OR relaxing)",
-  focus: "subject:(piano OR classical OR baroque OR bach OR sonata)",
-  workout: "subject:(symphony OR orchestra OR march OR allegro OR electronic)",
-  latenight: "subject:(nocturne OR jazz OR chopin OR satie OR night)",
-};
-
 interface SearchDoc {
   identifier: string;
+  licenseurl?: string;
 }
 
 interface IaFile {
@@ -149,18 +150,22 @@ export class ArchiveSource implements CatalogSource {
   }
 
   /** Search items, then expand each into a couple of tracks. */
-  private async find(query: string, limit: number): Promise<SourceTrack[]> {
-    const items = Math.max(4, Math.ceil(limit / TRACKS_PER_ITEM) + 2);
+  private async find(collections: string, query: string, limit: number): Promise<SourceTrack[]> {
+    // Many Musopen items hold only lossless files, so scan the whole (small) curated collection.
+    const items = collections === SHELF_COLLECTION ? 40 : Math.max(4, Math.ceil(limit / TRACKS_PER_ITEM) + 2);
     const qs = new URLSearchParams({
-      q: `${COLLECTIONS} AND mediatype:audio AND ${LICENSED}${query ? ` AND (${query})` : ""}`,
+      q: `${collections} AND mediatype:audio AND ${HAS_LICENSE}${query ? ` AND (${query})` : ""}`,
       rows: String(items),
       page: "1",
       output: "json",
     });
     qs.append("fl[]", "identifier");
+    qs.append("fl[]", "licenseurl");
     qs.append("sort[]", "downloads desc");
-    const body = await this.json<{ response?: { docs?: SearchDoc[] } }>(`${BASE}/advancedsearch.php?${qs}`);
-    const docs = body.response?.docs ?? [];
+    const body = await this.json<{ response?: { docs?: SearchDoc[] }; error?: string }>(`${BASE}/advancedsearch.php?${qs}`);
+    if (!body.response) throw new UpstreamError(`Internet Archive search failed${body.error ? `: ${body.error}` : ""}`);
+    // Skip items whose license obviously isn't PD/CC before fetching their metadata.
+    const docs = body.response.docs?.filter((d) => !d.licenseurl || /publicdomain|creativecommons\.org\/licenses/i.test(d.licenseurl)) ?? [];
     const metas = await Promise.allSettled(docs.map((d) => this.metadata(d.identifier)));
     const out: SourceTrack[] = [];
     for (const m of metas) {
@@ -171,11 +176,12 @@ export class ArchiveSource implements CatalogSource {
   }
 
   trending(limit: number) {
-    return this.find("", limit);
+    return this.find(SHELF_COLLECTION, "", limit);
   }
 
-  byMood(mood: Mood, limit: number) {
-    return this.find(MOOD_TERMS[mood], limit);
+  /** Musopen is classical: the same curated set suits every mood it's blended into. */
+  byMood(_mood: Mood, limit: number) {
+    return this.find(SHELF_COLLECTION, "", limit);
   }
 
   search(q: string, limit: number) {
@@ -187,7 +193,7 @@ export class ArchiveSource implements CatalogSource {
       .slice(0, 6);
     if (words.length === 0) return Promise.resolve([]);
     const term = words.map((w) => `"${w}"`).join(" AND ");
-    return this.find(`title:(${term}) OR creator:(${term}) OR subject:(${term})`, limit);
+    return this.find(SEARCH_COLLECTIONS, `title:(${term}) OR creator:(${term}) OR subject:(${term})`, limit);
   }
 
   async get(id: string): Promise<SourceTrack | null> {

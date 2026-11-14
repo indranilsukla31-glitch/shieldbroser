@@ -102,7 +102,9 @@ describe("Internet Archive in the API", () => {
     expect(tracks.every((t: { ref: string }) => t.ref.startsWith("archive:"))).toBe(true);
     expect(tracks.some((t: { ref: string }) => t.ref.includes("no-license-item"))).toBe(false);
     const search = log.find((u) => u.includes("advancedsearch"))!;
-    expect(decodeURIComponent(search.replace(/\+/g, " "))).toContain("licenseurl:(*publicdomain* OR *creativecommons.org/licenses*)");
+    const q = decodeURIComponent(search.replace(/\+/g, " "));
+    expect(q).toContain("collection:musopen");
+    expect(q).toContain("AND mediatype:audio AND licenseurl:http*");
   });
 
   it("blends archive results into search and the focus shelf", async () => {
